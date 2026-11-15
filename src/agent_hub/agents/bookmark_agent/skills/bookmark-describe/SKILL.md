@@ -1,53 +1,33 @@
 ---
 name: bookmark-describe
-description: Generate concise and accurate bookmark descriptions in Brazilian Portuguese and English.
+description: Generate concise bookmark descriptions in Brazilian Portuguese and English. Use when creating or improving bookmark descriptions.
 ---
 
-# Bookmark Description
+# Bookmark Describe
 
-Generate descriptions for a bookmark in Brazilian Portuguese and English.
+## Objective
 
-## Responsibilities
+Generate two equivalent descriptions for a bookmarked resource: one in Brazilian Portuguese and another in English.
 
-Produce two descriptions based on the supplied resource information.
+## Instructions
 
-### Brazilian Portuguese
+1. Analyze the provided URL, title and extracted content.
+2. Identify the resource's main subject, purpose and relevant characteristics.
+3. Write a clear and informative description in Brazilian Portuguese.
+4. Keep the description concise, preferably one or two sentences.
+5. Use the shared `text-translate` skill to translate the Portuguese description into English.
+6. Preserve exactly the meaning, context, tone and information of the original description during translation.
+7. Do not introduce information that is not supported by the extracted content.
+8. Preserve technical terminology, product names and proper nouns when appropriate.
+9. Avoid generic introductions and unnecessary expressions.
+10. Do not include category or subcategory recommendations.
+11. Do not summarize or expand the description during translation.
 
-- Use natural Brazilian Portuguese.
-- Prefer clear and objective language.
-- Explain what the resource offers and why it is useful.
-- Preserve technical terms when appropriate.
-- Avoid literal translations from English.
+## Output
 
-### English
+Return both descriptions using the following fields:
 
-- Use natural, fluent English.
-- Preserve the original meaning of the Portuguese description.
-- Use appropriate technical terminology.
-- Avoid unnecessary promotional language.
+- `description_pt_br`: Description in Brazilian Portuguese.
+- `description_en`: Equivalent description in English.
 
-## Quality Guidelines
-
-- Be concise and informative.
-- Focus on the resource's actual purpose.
-- Do not repeat the title unnecessarily.
-- Avoid generic descriptions.
-- Do not invent features, capabilities, or content.
-- Do not make claims that are unsupported by the extracted information.
-- Prefer one or two sentences per language.
-
-## Output Requirements
-
-Return:
-
-- `description_pt_br`: description in Brazilian Portuguese.
-- `description_en`: description in English.
-
-Both descriptions must communicate the same essential information.
-
-## Restrictions
-
-- Do not classify the bookmark.
-- Do not suggest categories or subcategories.
-- Do not add personal opinions.
-- Do not fabricate information.
+Both descriptions must convey the same information and meaning.

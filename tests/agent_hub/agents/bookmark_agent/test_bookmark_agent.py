@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock
@@ -97,7 +96,9 @@ class TestBookmarkAgent:
                     "description_pt_br": (
                         "Uma página sobre inteligência artificial."
                     ),
-                    "description_en": (
+                },
+                "text-translate": {
+                    "translated_text": (
                         "A page about artificial intelligence."
                     ),
                 },
@@ -139,7 +140,7 @@ class TestBookmarkAgent:
         assert result.description_pt_br is not None
         assert result.description_en is not None
 
-        assert interpreter.interpret.await_count == 3
+        assert interpreter.interpret.await_count == 4
 
     @pytest.mark.asyncio
     async def test_extract_bookmark(
@@ -192,7 +193,9 @@ class TestBookmarkAgent:
             {
                 "bookmark-describe": {
                     "description_pt_br": "Descrição em português.",
-                    "description_en": "Description in English.",
+                },
+                "text-translate": {
+                    "translated_text": "Description in English.",
                 },
             },
         )
@@ -208,7 +211,7 @@ class TestBookmarkAgent:
         assert result.status == "completed"
         assert result.description_pt_br == "Descrição em português."
         assert result.description_en == "Description in English."
-        assert interpreter.interpret.await_count == 1
+        assert interpreter.interpret.await_count == 2
 
     @pytest.mark.asyncio
     async def test_classify_bookmark(

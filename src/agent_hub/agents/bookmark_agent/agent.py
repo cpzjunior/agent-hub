@@ -1,3 +1,4 @@
+
 import asyncio
 from html.parser import HTMLParser
 from pathlib import Path
@@ -168,9 +169,20 @@ class BookmarkAgent(Agent):
             else None
         )
 
-        skills_directory = Path(__file__).parent / "skills"
-        loaded_skills = SkillLoader(skills_directory).load_all()
-        self._skills = {skill.name: skill for skill in loaded_skills}
+        agent_skills_directory = Path(__file__).parent / "skills"
+        shared_skills_directory = (
+            Path(__file__).parents[2] / "shared" / "skills"
+        )
+
+        agent_skills = SkillLoader(agent_skills_directory).load_all()
+        shared_skills = SkillLoader(shared_skills_directory).load_all()
+
+        all_skills = agent_skills + shared_skills
+
+        self._skills = {
+            skill.name: skill
+            for skill in all_skills
+        }
 
     @property
     def input_schema(self) -> type[BaseModel]:
@@ -253,13 +265,13 @@ class BookmarkAgent(Agent):
                     return self._needs_input("content")
 
             if request.operation in {"create", "describe"}:
-                skill_result = await self._run_skill(
-                    "bookmark-describe",
-                    {
-                        "url": url,
-                        "title": title,
-                        "content": content,
-                    },
+                if not content:
+                    return self._needs_input("content")
+
+                skill_result = await self._generate_descriptions(
+                    url=url,
+                    title=title,
+                    content=content,
                 )
 
                 if isinstance(skill_result, BookmarkAgentOutput):
@@ -281,8 +293,8 @@ class BookmarkAgent(Agent):
                     return BookmarkAgentOutput(
                         status="failed",
                         message=(
-                            "The description skill returned incomplete "
-                            "descriptions."
+                            "The description generation returned "
+                            "incomplete descriptions."
                         ),
                         url=url,
                         title=title,
@@ -421,6 +433,75 @@ class BookmarkAgent(Agent):
                 status="failed",
                 message=f"Bookmark processing failed: {exc}",
             )
+
+    async def _generate_descriptions(
+        self,
+        url: str | None,
+        title: str | None,
+        content: str,
+    ) -> dict[str, Any] | BookmarkAgentOutput:
+        description_result = await self._run_skill(
+            "bookmark-describe",
+            {
+                "url": url,
+                "title": title,
+                "content": content,
+            },
+        )
+
+        if isinstance(description_result, BookmarkAgentOutput):
+            return description_result
+
+        description_pt_br = self._required_string(
+            description_result,
+            "description_pt_br",
+        )
+
+        if not description_pt_br:
+            return BookmarkAgentOutput(
+                status="failed",
+                message=(
+                    "The description skill did not return "
+                    "a Portuguese description."
+                ),
+                url=url,
+                title=title,
+                content=content,
+            )
+
+        translation_result = await self._run_skill(
+            "text-translate",
+            {
+                "text": description_pt_br,
+                "source_language": "Brazilian Portuguese",
+                "target_language": "English",
+            },
+        )
+
+        if isinstance(translation_result, BookmarkAgentOutput):
+            return translation_result
+
+        description_en = self._required_string(
+            translation_result,
+            "translated_text",
+        )
+
+        if not description_en:
+            return BookmarkAgentOutput(
+                status="failed",
+                message=(
+                    "The translation skill returned an incomplete "
+                    "English description."
+                ),
+                url=url,
+                title=title,
+                content=content,
+            )
+
+        return {
+            "description_pt_br": description_pt_br,
+            "description_en": description_en,
+        }
 
     async def _run_skill(
         self,
