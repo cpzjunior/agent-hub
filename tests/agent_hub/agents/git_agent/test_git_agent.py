@@ -1,247 +1,404 @@
 
 from pathlib import Path
+from unittest.mock import AsyncMock
 
-from agent_hub.agents.git_agent import (
+import pytest
+
+from agent_hub.agents.git_agent.agent import (
     GitAgent,
-    GitAgentInput,
-    GitAgentOutput,
+    GitAgentRequest,
 )
-from agent_hub.agents.git_agent.tools.git_pull.impl.git_pull import (
-    GitPullInput,
-    GitPullTool,
-    RepositoryResult,
+from agent_hub.agents.git_agent.tools.git_cli import (
+    GitCliInput,
+    GitCliOutput,
+    GitCliTool,
+    GitOperation,
 )
-from agent_hub.core import (
-    InterpretationRequest,
-    InterpretationResult,
-    Interpreter,
-)
+from agent_hub.core.interpreter import InterpretationResult
 
 
-class FakeInterpreter(Interpreter):
-    def __init__(self, result: InterpretationResult) -> None:
-        self.result = result
-        self.last_request: InterpretationRequest | None = None
-
-    async def interpret(
-        self,
-        request: InterpretationRequest,
-    ) -> InterpretationResult:
-        self.last_request = request
-        return self.result
+@pytest.fixture
+def interpreter() -> AsyncMock:
+    return AsyncMock()
 
 
-class FakeGitPullTool(GitPullTool):
-    def __init__(
-        self,
-        results: list[RepositoryResult] | None = None,
-    ) -> None:
-        self.results = results or []
-        self.last_input: GitPullInput | None = None
-        self.execution_count = 0
-
-    async def execute(
-        self,
-        input: GitPullInput,
-    ) -> list[RepositoryResult]:
-        self.last_input = input
-        self.execution_count += 1
-        return self.results
+@pytest.fixture
+def tool() -> AsyncMock:
+    mock = AsyncMock(spec=GitCliTool)
+    mock.execute.return_value = GitCliOutput(
+        operation=GitOperation.STATUS,
+        return_code=0,
+        stdout="",
+        stderr="",
+    )
+    return mock
 
 
-def create_interpreter(
-    skill_name: str | None = "git-pull",
+@pytest.fixture
+def agent(
+    interpreter: AsyncMock,
+    tool: AsyncMock,
+) -> GitAgent:
+    return GitAgent(
+        tool=tool,
+        interpreter=interpreter,
+    )
+
+
+def interpretation(
+    operation: str = "status",
     parameters: dict[str, object] | None = None,
     missing_inputs: list[str] | None = None,
     message: str | None = None,
-) -> FakeInterpreter:
-    return FakeInterpreter(
-        InterpretationResult(
-            skill_name=skill_name,
-            parameters=parameters or {},
-            missing_inputs=missing_inputs or [],
-            message=message,
+    skill_name: str | None = "git-operations",
+) -> InterpretationResult:
+    return InterpretationResult(
+        skill_name=skill_name,
+        parameters={
+            "operation": operation,
+            **(parameters or {}),
+        },
+        missing_inputs=missing_inputs or [],
+        message=message,
+    )
+
+
+@pytest.mark.asyncio
+async def test_status_instruction_executes_git_status(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
+    tmp_path: Path,
+) -> None:
+    interpreter.interpret.return_value = interpretation()
+
+    tool.execute.return_value = GitCliOutput(
+        operation=GitOperation.STATUS,
+        return_code=0,
+        stdout="## main",
+    )
+
+    result = await agent.run(
+        GitAgentRequest(
+            instruction="Mostre o status do repositório",
+            root_path=tmp_path,
         )
     )
 
+    assert result.status == "completed"
+    assert result.result is not None
+    assert result.result.operation == GitOperation.STATUS
 
-def test_git_agent_loads_skills() -> None:
-    agent = GitAgent()
+    tool.execute.assert_awaited_once()
 
-    assert len(agent.skills) == 1
-    assert agent.skills[0].name == "git-pull"
-
-
-async def test_run_requests_missing_root_path() -> None:
-    tool = FakeGitPullTool()
-    agent = GitAgent(tool=tool)
-
-    result = await agent.run(
-        {"instruction": "Atualize meus repositórios."}
-    )
-
-    assert result.status == "needs_input"
-    assert result.required_input == "root_path"
-    assert tool.execution_count == 0
+    executed_input = tool.execute.await_args.args[0]
+    assert isinstance(executed_input, GitCliInput)
+    assert executed_input.operation == GitOperation.STATUS
+    assert executed_input.root_path == tmp_path
 
 
-async def test_run_interprets_and_executes_git_pull(
+@pytest.mark.asyncio
+async def test_branch_create_instruction_executes_branch_creation(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
     tmp_path: Path,
 ) -> None:
-    interpreter = create_interpreter(
-        parameters={"root_path": str(tmp_path)}
-    )
-    tool = FakeGitPullTool(
-        results=[
-            RepositoryResult(
-                repository_path=str(tmp_path / "repo"),
-                status="success",
-                message="Already up to date.",
-            )
-        ]
+    interpreter.interpret.return_value = interpretation(
+        operation="branch_create",
+        parameters={"branch_name": "feature/test"},
     )
 
-    agent = GitAgent(
-        tool=tool,
-        interpreter=interpreter,
+    tool.execute.return_value = GitCliOutput(
+        operation=GitOperation.BRANCH_CREATE,
+        return_code=0,
     )
 
     result = await agent.run(
-        {"instruction": "Atualize meus repositórios."}
+        GitAgentRequest(
+            instruction="Crie a branch feature/test",
+            root_path=tmp_path,
+        )
     )
 
     assert result.status == "completed"
-    assert result.total_repositories == 1
-    assert result.successful_pulls == 1
 
-    assert interpreter.last_request is not None
-    assert interpreter.last_request.instruction == (
-        "Atualize meus repositórios."
-    )
-    assert any(
-        skill.name == "git-pull"
-        for skill in interpreter.last_request.skills
-    )
-
-    assert tool.execution_count == 1
-    assert tool.last_input is not None
-    assert tool.last_input.root_path == tmp_path
+    executed_input = tool.execute.await_args.args[0]
+    assert executed_input.operation == GitOperation.BRANCH_CREATE
+    assert executed_input.branch_name == "feature/test"
 
 
-async def test_run_uses_explicit_root_path(
-    tmp_path: Path,
+@pytest.mark.asyncio
+async def test_missing_root_path_returns_needs_input(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
 ) -> None:
-    interpreter = create_interpreter()
-    tool = FakeGitPullTool()
-
-    agent = GitAgent(
-        tool=tool,
-        interpreter=interpreter,
-    )
-
-    result = await agent.run(
-        {
-            "instruction": "Atualize meus repositórios.",
-            "root_path": tmp_path,
-        }
-    )
-
-    assert result.status == "completed"
-    assert tool.last_input is not None
-    assert tool.last_input.root_path == tmp_path
-
-
-async def test_run_handles_missing_information() -> None:
-    interpreter = create_interpreter(
+    interpreter.interpret.return_value = interpretation(
         missing_inputs=["root_path"],
-        message="Informe o diretório dos repositórios.",
-    )
-    tool = FakeGitPullTool()
-
-    agent = GitAgent(
-        tool=tool,
-        interpreter=interpreter,
+        message="Informe o diretório do repositório.",
     )
 
     result = await agent.run(
-        {"instruction": "Atualize meus repositórios."}
+        GitAgentRequest(
+            instruction="Mostre o status do repositório",
+        )
     )
 
     assert result.status == "needs_input"
     assert result.required_input == "root_path"
-    assert result.message == "Informe o diretório dos repositórios."
-    assert tool.execution_count == 0
+    tool.execute.assert_not_awaited()
 
 
-async def test_run_handles_unknown_skill() -> None:
-    interpreter = create_interpreter(
-        skill_name=None,
-        message="Nenhuma skill disponível atende à solicitação.",
-    )
-    tool = FakeGitPullTool()
-
-    agent = GitAgent(
-        tool=tool,
-        interpreter=interpreter,
-    )
-
-    result = await agent.run(
-        {"instruction": "Envie um e-mail."}
-    )
-
-    assert result.status == "unsupported"
-    assert tool.execution_count == 0
-
-
-async def test_run_returns_execution_summary(
+@pytest.mark.asyncio
+async def test_root_path_from_request_has_priority(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
     tmp_path: Path,
 ) -> None:
-    tool = FakeGitPullTool(
-        results=[
-            RepositoryResult(
-                repository_path=str(tmp_path / "repo1"),
-                status="success",
-                message="Already up to date.",
-            ),
-            RepositoryResult(
-                repository_path=str(tmp_path / "repo2"),
-                status="skipped",
-                message="Repository has uncommitted changes.",
-            ),
-            RepositoryResult(
-                repository_path=str(tmp_path / "repo3"),
-                status="failed",
-                message="Git pull failed.",
-            ),
-        ]
+    request_path = tmp_path / "request"
+    interpreted_path = tmp_path / "interpreted"
+
+    interpreter.interpret.return_value = interpretation(
+        parameters={"root_path": str(interpreted_path)},
     )
 
-    agent = GitAgent(tool=tool)
-
-    result = await agent.run(
-        GitAgentInput(root_path=tmp_path).model_dump()
-        | {"instruction": "Atualize meus repositórios."}
-    )
-
-    assert isinstance(result, GitAgentOutput)
-    assert result.status == "completed"
-    assert result.total_repositories == 3
-    assert result.successful_pulls == 1
-    assert len(result.skipped_repositories) == 1
-    assert len(result.failed_repositories) == 1
-
-
-async def test_run_does_not_execute_when_skill_is_unknown() -> None:
-    interpreter = create_interpreter(skill_name="unknown-skill")
-    tool = FakeGitPullTool()
-
-    agent = GitAgent(
-        tool=tool,
-        interpreter=interpreter,
+    tool.execute.return_value = GitCliOutput(
+        operation=GitOperation.STATUS,
+        return_code=0,
     )
 
     await agent.run(
-        {"instruction": "Faça alguma coisa."}
+        GitAgentRequest(
+            instruction="Mostre o status",
+            root_path=request_path,
+        )
     )
 
-    assert tool.execution_count == 0
+    executed_input = tool.execute.await_args.args[0]
+    assert executed_input.root_path == request_path
+
+
+@pytest.mark.asyncio
+async def test_unrecognized_skill_returns_unsupported(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
+    tmp_path: Path,
+) -> None:
+    interpreter.interpret.return_value = interpretation(
+        skill_name=None,
+        message="Não encontrei uma operação compatível.",
+    )
+
+    result = await agent.run(
+        GitAgentRequest(
+            instruction="Faça algo não suportado",
+            root_path=tmp_path,
+        )
+    )
+
+    assert result.status == "unsupported"
+    assert result.message == "Não encontrei uma operação compatível."
+    tool.execute.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_commit_without_confirmation_returns_needs_input(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
+    tmp_path: Path,
+) -> None:
+    interpreter.interpret.return_value = interpretation(
+        operation="commit",
+        parameters={"commit_message": "Test commit"},
+    )
+
+    tool.execute.side_effect = ValueError(
+        "Operation 'commit' requires confirmation."
+    )
+
+    result = await agent.run(
+        GitAgentRequest(
+            instruction="Faça um commit com a mensagem Test commit",
+            root_path=tmp_path,
+        )
+    )
+
+    assert result.status == "needs_input"
+    assert "requires confirmation" in result.message
+
+    executed_input = tool.execute.await_args.args[0]
+    assert executed_input.operation == GitOperation.COMMIT
+    assert executed_input.confirmed is False
+
+
+@pytest.mark.asyncio
+async def test_commit_with_confirmation_executes_operation(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
+    tmp_path: Path,
+) -> None:
+    interpreter.interpret.return_value = interpretation(
+        operation="commit",
+        parameters={
+            "commit_message": "Test commit",
+            "confirmed": True,
+        },
+    )
+
+    tool.execute.return_value = GitCliOutput(
+        operation=GitOperation.COMMIT,
+        return_code=0,
+        stdout="Commit created",
+    )
+
+    result = await agent.run(
+        GitAgentRequest(
+            instruction="Faça um commit",
+            root_path=tmp_path,
+            confirmed=True,
+        )
+    )
+
+    assert result.status == "completed"
+
+    executed_input = tool.execute.await_args.args[0]
+    assert executed_input.operation == GitOperation.COMMIT
+    assert executed_input.confirmed is True
+
+
+@pytest.mark.asyncio
+async def test_llm_cannot_authorize_operation(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
+    tmp_path: Path,
+) -> None:
+    interpreter.interpret.return_value = interpretation(
+        operation="push",
+        parameters={"confirmed": True},
+    )
+
+    tool.execute.side_effect = ValueError(
+        "Operation 'push' requires confirmation."
+    )
+
+    result = await agent.run(
+        GitAgentRequest(
+            instruction="Faça push",
+            root_path=tmp_path,
+            confirmed=False,
+        )
+    )
+
+    assert result.status == "needs_input"
+
+    executed_input = tool.execute.await_args.args[0]
+    assert executed_input.confirmed is False
+
+
+@pytest.mark.asyncio
+async def test_invalid_operation_parameters_return_needs_input(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
+    tmp_path: Path,
+) -> None:
+    interpreter.interpret.return_value = interpretation(
+        operation="branch_create",
+    )
+
+    tool.execute.side_effect = ValueError(
+        "Operation 'branch_create' requires branch_name."
+    )
+
+    result = await agent.run(
+        GitAgentRequest(
+            instruction="Crie uma branch",
+            root_path=tmp_path,
+        )
+    )
+
+    assert result.status == "needs_input"
+    assert "requires branch_name" in result.message
+    tool.execute.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_git_execution_failure_returns_failed(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
+    tmp_path: Path,
+) -> None:
+    interpreter.interpret.return_value = interpretation()
+
+    tool.execute.return_value = GitCliOutput(
+        operation=GitOperation.STATUS,
+        return_code=128,
+        stderr="fatal: not a git repository",
+    )
+
+    result = await agent.run(
+        GitAgentRequest(
+            instruction="Mostre o status",
+            root_path=tmp_path,
+        )
+    )
+
+    assert result.status == "failed"
+    assert result.message == "fatal: not a git repository"
+
+
+@pytest.mark.asyncio
+async def test_interpreter_receives_loaded_skills(
+    agent: GitAgent,
+    interpreter: AsyncMock,
+    tool: AsyncMock,
+    tmp_path: Path,
+) -> None:
+    interpreter.interpret.return_value = interpretation()
+
+    tool.execute.return_value = GitCliOutput(
+        operation=GitOperation.STATUS,
+        return_code=0,
+    )
+
+    await agent.run(
+        GitAgentRequest(
+            instruction="Mostre o status",
+            root_path=tmp_path,
+        )
+    )
+
+    interpreter_request = interpreter.interpret.await_args.args[0]
+
+    assert interpreter_request.instruction == "Mostre o status"
+    assert interpreter_request.skills
+    assert any(
+        skill.name == "git-operations"
+        for skill in interpreter_request.skills
+    )
+
+
+@pytest.mark.asyncio
+async def test_agent_without_interpreter_returns_needs_input(
+    tool: AsyncMock,
+    tmp_path: Path,
+) -> None:
+    agent = GitAgent(tool=tool)
+
+    result = await agent.run(
+        GitAgentRequest(
+            instruction="Mostre o status",
+            root_path=tmp_path,
+        )
+    )
+
+    assert result.status == "needs_input"
+    assert result.required_input == "interpreter"
+    tool.execute.assert_not_awaited()

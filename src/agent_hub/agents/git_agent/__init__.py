@@ -1,13 +1,8 @@
-from .agent import (
-    GitAgent,
-    GitAgentInput,
-    GitAgentOutput,
-    GitAgentRequest,
-)
+
+from .agent import GitAgent, GitAgentOutput, GitAgentRequest
 
 __all__ = [
     "GitAgent",
-    "GitAgentInput",
     "GitAgentOutput",
     "GitAgentRequest",
 ]
