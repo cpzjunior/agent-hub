@@ -1,8 +1,16 @@
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "agent-hub"
 version = "0.1.0"
 description = "A modular workspace for building, organizing and orchestrating AI agents."
+readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "MIT" }
+
 dependencies = [
     "langchain",
     "langgraph",
@@ -11,10 +19,33 @@ dependencies = [
     "pydantic-settings",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "pytest",
     "pytest-asyncio",
     "ruff",
     "mypy",
 ]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
