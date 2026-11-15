@@ -14,6 +14,7 @@ license = { text = "MIT" }
 dependencies = [
     "langchain",
     "langgraph",
+    "langchain-anthropic",
     "langchain-openai",
     "pydantic",
     "pydantic-settings",

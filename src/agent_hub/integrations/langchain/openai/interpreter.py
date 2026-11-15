@@ -9,7 +9,7 @@ from agent_hub.core import (
     InterpretationResult,
     Interpreter,
 )
-from agent_hub.integrations.langchain.settings import OpenAISettings
+from agent_hub.integrations.langchain.openai.settings import OpenAISettings
 
 
 class OpenAIInterpreter(Interpreter):

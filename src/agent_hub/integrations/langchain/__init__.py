@@ -1,7 +1,10 @@
-from .openai_interpreter import OpenAIInterpreter
-from .settings import OpenAISettings
+
+from .anthropic import AnthropicInterpreter, AnthropicSettings
+from .openai import OpenAIInterpreter, OpenAISettings
 
 __all__ = [
+    "AnthropicInterpreter",
+    "AnthropicSettings",
     "OpenAIInterpreter",
     "OpenAISettings",
 ]

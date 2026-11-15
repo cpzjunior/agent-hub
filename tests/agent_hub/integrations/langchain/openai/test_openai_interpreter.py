@@ -6,7 +6,7 @@ from agent_hub.core import (
     InterpretationResult,
     Skill,
 )
-from agent_hub.integrations.langchain import (
+from agent_hub.integrations.langchain.openai import (
     OpenAIInterpreter,
     OpenAISettings,
 )
