@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from typing import cast
 
@@ -6,6 +5,7 @@ import pytest
 
 from agent_hub.agents.agent_builder import AgentBuilder
 from agent_hub.agents.bookmark_agent import BookmarkAgent
+from agent_hub.agents.decision_architect import DecisionArchitect
 from agent_hub.agents.git_agent import GitAgent
 from agent_hub.agents.project_ideas_agent import ProjectIdeasAgent
 from agent_hub.bootstrap import build_agent_registry
@@ -32,6 +32,7 @@ def interpreters() -> dict[str, Interpreter]:
         "agent-builder": StubInterpreter(),
         "bookmark-agent": StubInterpreter(),
         "project-ideas-agent": StubInterpreter(),
+        "decision-architect": StubInterpreter(),
     }
 
 
@@ -44,7 +45,7 @@ def test_build_agent_registry_registers_all_agents(
 
     agents = registry.list()
 
-    assert len(agents) == 4
+    assert len(agents) == 5
 
     assert isinstance(registry.get("git-agent"), GitAgent)
     assert isinstance(registry.get("agent-builder"), AgentBuilder)
@@ -52,6 +53,10 @@ def test_build_agent_registry_registers_all_agents(
     assert isinstance(
         registry.get("project-ideas-agent"),
         ProjectIdeasAgent,
+    )
+    assert isinstance(
+        registry.get("decision-architect"),
+        DecisionArchitect,
     )
 
 
@@ -67,11 +72,22 @@ def test_build_agent_registry_injects_interpreters(
         ProjectIdeasAgent,
         registry.get("project-ideas-agent"),
     )
+    decision_architect = cast(
+        DecisionArchitect,
+        registry.get("decision-architect"),
+    )
 
     assert git_agent._interpreter is interpreters["git-agent"]
     assert agent_builder._interpreter is interpreters["agent-builder"]
     assert bookmark_agent._interpreter is interpreters["bookmark-agent"]
-    assert project_ideas_agent._interpreter is interpreters["project-ideas-agent"]
+    assert (
+        project_ideas_agent._interpreter
+        is interpreters["project-ideas-agent"]
+    )
+    assert (
+        decision_architect._interpreter
+        is interpreters["decision-architect"]
+    )
 
 
 def test_build_agent_registry_configures_repository_paths(

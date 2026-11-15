@@ -4,6 +4,7 @@ from pathlib import Path
 
 from agent_hub.agents.agent_builder import AgentBuilder
 from agent_hub.agents.bookmark_agent import BookmarkAgent
+from agent_hub.agents.decision_architect import DecisionArchitect
 from agent_hub.agents.git_agent import GitAgent
 from agent_hub.agents.project_ideas_agent import ProjectIdeasAgent
 from agent_hub.core.agent_registry import AgentRegistry
@@ -19,6 +20,7 @@ AGENT_NAMES = {
     "agent-builder",
     "bookmark-agent",
     "project-ideas-agent",
+    "decision-architect",
 }
 
 
@@ -56,6 +58,12 @@ def build_agent_registry(
         ProjectIdeasAgent(
             interpreter=interpreters["project-ideas-agent"],
             project_ideas_path=PROJECT_IDEAS_PATH,
+        )
+    )
+
+    registry.register(
+        DecisionArchitect(
+            interpreter=interpreters["decision-architect"]
         )
     )
 
