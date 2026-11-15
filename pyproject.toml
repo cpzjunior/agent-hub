@@ -1,0 +1,20 @@
+[project]
+name = "agent-hub"
+version = "0.1.0"
+description = "A modular workspace for building, organizing and orchestrating AI agents."
+requires-python = ">=3.12"
+dependencies = [
+    "langchain",
+    "langgraph",
+    "langchain-openai",
+    "pydantic",
+    "pydantic-settings",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+    "mypy",
+]
