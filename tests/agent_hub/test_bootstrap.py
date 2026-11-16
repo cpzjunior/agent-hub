@@ -8,6 +8,7 @@ from agent_hub.agents.bookmark_agent import BookmarkAgent
 from agent_hub.agents.decision_architect import DecisionArchitect
 from agent_hub.agents.git_agent import GitAgent
 from agent_hub.agents.project_ideas_agent import ProjectIdeasAgent
+from agent_hub.agents.writing_assistant import WritingAssistant
 from agent_hub.bootstrap import build_agent_registry
 from agent_hub.core import (
     AgentRegistry,
@@ -33,6 +34,7 @@ def interpreters() -> dict[str, Interpreter]:
         "bookmark-agent": StubInterpreter(),
         "project-ideas-agent": StubInterpreter(),
         "decision-architect": StubInterpreter(),
+        "writing-assistant": StubInterpreter(),
     }
 
 
@@ -45,7 +47,7 @@ def test_build_agent_registry_registers_all_agents(
 
     agents = registry.list()
 
-    assert len(agents) == 5
+    assert len(agents) == 6
 
     assert isinstance(registry.get("git-agent"), GitAgent)
     assert isinstance(registry.get("agent-builder"), AgentBuilder)
@@ -57,6 +59,10 @@ def test_build_agent_registry_registers_all_agents(
     assert isinstance(
         registry.get("decision-architect"),
         DecisionArchitect,
+    )
+    assert isinstance(
+        registry.get("writing-assistant"),
+        WritingAssistant,
     )
 
 
@@ -76,6 +82,10 @@ def test_build_agent_registry_injects_interpreters(
         DecisionArchitect,
         registry.get("decision-architect"),
     )
+    writing_assistant = cast(
+        WritingAssistant,
+        registry.get("writing-assistant"),
+    )
 
     assert git_agent._interpreter is interpreters["git-agent"]
     assert agent_builder._interpreter is interpreters["agent-builder"]
@@ -87,6 +97,10 @@ def test_build_agent_registry_injects_interpreters(
     assert (
         decision_architect._interpreter
         is interpreters["decision-architect"]
+    )
+    assert (
+        writing_assistant.interpreter
+        is interpreters["writing-assistant"]
     )
 
 
@@ -125,6 +139,29 @@ def test_build_agent_registry_configures_repository_paths(
     assert bookmark_agent._bookmarks_path == bookmarks_path.resolve()
     assert project_ideas_agent._project_ideas_path == (
         project_ideas_path.resolve()
+    )
+
+
+def test_build_agent_registry_configures_writing_assistant_paths(
+    interpreters: dict[str, Interpreter],
+) -> None:
+    import agent_hub.bootstrap as bootstrap
+
+    registry = build_agent_registry(interpreters)
+
+    writing_assistant = cast(
+        WritingAssistant,
+        registry.get("writing-assistant"),
+    )
+
+    assert writing_assistant.agent_path == (
+        Path(bootstrap.__file__).parent
+        / "agents"
+        / "writing_assistant"
+    )
+
+    assert writing_assistant.shared_skills_path == (
+        Path(bootstrap.__file__).parent / "shared" / "skills"
     )
 
 

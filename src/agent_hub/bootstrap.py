@@ -1,4 +1,3 @@
-
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -7,6 +6,7 @@ from agent_hub.agents.bookmark_agent import BookmarkAgent
 from agent_hub.agents.decision_architect import DecisionArchitect
 from agent_hub.agents.git_agent import GitAgent
 from agent_hub.agents.project_ideas_agent import ProjectIdeasAgent
+from agent_hub.agents.writing_assistant import WritingAssistant
 from agent_hub.core.agent_registry import AgentRegistry
 from agent_hub.core.interpreter import Interpreter
 
@@ -15,12 +15,15 @@ REPOSITORIES_PATH = Path.home() / "source" / "repos"
 BOOKMARKS_PATH = REPOSITORIES_PATH / "bookmarks"
 PROJECT_IDEAS_PATH = REPOSITORIES_PATH / "project-ideas"
 
+SHARED_SKILLS_PATH = Path(__file__).parent / "shared" / "skills"
+
 AGENT_NAMES = {
     "git-agent",
     "agent-builder",
     "bookmark-agent",
     "project-ideas-agent",
     "decision-architect",
+    "writing-assistant",
 }
 
 
@@ -64,6 +67,14 @@ def build_agent_registry(
     registry.register(
         DecisionArchitect(
             interpreter=interpreters["decision-architect"]
+        )
+    )
+
+    registry.register(
+        WritingAssistant(
+            interpreter=interpreters["writing-assistant"],
+            agent_path=Path(__file__).parent / "agents" / "writing_assistant",
+            shared_skills_path=SHARED_SKILLS_PATH,
         )
     )
 
