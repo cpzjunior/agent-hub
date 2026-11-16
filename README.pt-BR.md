@@ -1,3 +1,5 @@
+🇺🇸 [English](README.md) | 🇧🇷 [Português](README.pt-BR.md)
+
 # Agent Hub
 
 Um espaço de trabalho modular para criar, organizar e orquestrar agentes de IA, com habilidades encapsuladas, ferramentas e recursos compartilhados.
