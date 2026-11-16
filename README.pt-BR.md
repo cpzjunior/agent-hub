@@ -21,7 +21,7 @@ Execute os seguintes comandos a partir da raiz do projeto usando PowerShell:
 
 ```powershell
 python -m venv .venv
-..venvScriptsActivate.ps1
+.\.venv\Scripts\Activate.ps1
 python -m pip install -e ".[dev]"
 ```
 
@@ -29,7 +29,7 @@ Se o PowerShell bloquear a execução de scripts:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-..venvScriptsActivate.ps1
+.\.venv\Scripts\Activate.ps1
 ```
 
 ## Agentes
@@ -68,15 +68,15 @@ Exemplo de configuração de cliente MCP:
 
 ```json
 {
-&#x20; "mcpServers": {
-&#x20;   "agent-hub": {
-&#x20;     "command": "python",
-&#x20;     "args": ["-m", "agent_hub.mcp"],
-&#x20;     "env": {
-&#x20;       "OPENAI_API_KEY": "sua-chave-de-api"
-&#x20;     }
-&#x20;   }
-&#x20; }
+  "mcpServers": {
+    "agent-hub": {
+      "command": "python",
+      "args": ["-m", "agent_hub.mcp"],
+      "env": {
+        "OPENAI_API_KEY": "your-api-key"
+      }
+    }
+  }
 }
 ```
 
