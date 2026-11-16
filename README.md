@@ -58,8 +58,11 @@ Each agent is exposed through one MCP tool:
 |---|---|
 | Git Agent | `git_agent` |
 | Agent Builder | `agent_builder` |
+| Archmage Scribe | `archmage_scribe` |
 | Bookmark Agent | `bookmark_agent` |
+| Decision Architect | `decision_architect` |
 | Project Ideas Agent | `project_ideas_agent` |
+| Writing Assistant | `writing_assistant` |
 
 The server is started with:
 
@@ -67,7 +70,7 @@ The server is started with:
 python -m agent_hub.mcp
 ```
 
-The current entry point configures OpenAI interpreters for all four agents. Set `OPENAI_API_KEY` before starting the server.
+The current entry point configures OpenAI interpreters for all agents. Set `OPENAI_API_KEY` before starting the server.
 
 Example MCP client configuration:
 
