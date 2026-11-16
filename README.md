@@ -40,8 +40,11 @@ The workspace currently includes:
 
 - **Git Agent** — performs Git operations in local repositories.
 - **Agent Builder** — assists with creating and improving agents, skills and tools.
+- **Archmage Scribe** — develops fantasy-world concepts, maintains consistency with a local canon repository and writes in-world fantasy texts.
 - **Bookmark Agent** — creates, extracts, describes and classifies bookmarks.
+- **Decision Architect** — supports decision analysis through an iterative process covering context, objectives, uncertainties, consequences and evolution.
 - **Project Ideas Agent** — generates structured project idea documents.
+- **Writing Assistant** — explores ideas, writes, reviews, summarizes and translates articles while preserving the author's editorial voice.
 
 Each agent has its own instructions, workflows and tools where applicable. LLM interpretation is provided through interchangeable implementations of the core `Interpreter` interface, currently supporting OpenAI and Anthropic.
 
