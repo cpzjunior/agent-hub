@@ -100,3 +100,7 @@ All checks should pass before committing changes.
 2. Implement the changes.
 3. Run tests, lint and type checking.
 4. Commit only after all checks pass.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
