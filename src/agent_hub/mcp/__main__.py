@@ -7,8 +7,11 @@ def main() -> None:
     interpreters = {
         "git-agent": OpenAIInterpreter(),
         "agent-builder": OpenAIInterpreter(),
+        "archmage-scribe": OpenAIInterpreter(),
         "bookmark-agent": OpenAIInterpreter(),
+        "decision-architect": OpenAIInterpreter(),
         "project-ideas-agent": OpenAIInterpreter(),
+        "writing-assistant": OpenAIInterpreter(),
     }
 
     registry = build_agent_registry(interpreters)

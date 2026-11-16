@@ -6,9 +6,12 @@ import pytest
 from mcp import Client
 
 from agent_hub.agents.agent_builder.agent import AgentBuilderRequest
+from agent_hub.agents.archmage_scribe.agent import ArchmageScribeRequest
 from agent_hub.agents.bookmark_agent.agent import BookmarkAgentRequest
+from agent_hub.agents.decision_architect.agent import DecisionArchitectRequest
 from agent_hub.agents.git_agent.agent import GitAgentRequest
 from agent_hub.agents.project_ideas_agent.agent import ProjectIdeasAgentRequest
+from agent_hub.agents.writing_assistant.agent import WritingAssistantRequest
 from agent_hub.core import Agent, AgentRegistry
 from agent_hub.mcp.server import create_mcp_server
 
@@ -23,8 +26,11 @@ def agents() -> dict[str, Mock]:
     definitions = {
         "git-agent": "Git agent description",
         "agent-builder": "Agent builder description",
+        "archmage-scribe": "Archmage Scribe description",
         "bookmark-agent": "Bookmark agent description",
+        "decision-architect": "Decision Architect description",
         "project-ideas-agent": "Project ideas agent description",
+        "writing-assistant": "Writing Assistant description",
     }
 
     result = {}
@@ -59,8 +65,11 @@ async def test_server_registers_all_agent_tools(server: Any) -> None:
     assert tool_names == {
         "git_agent",
         "agent_builder",
+        "archmage_scribe",
         "bookmark_agent",
+        "decision_architect",
         "project_ideas_agent",
+        "writing_assistant",
     }
 
 
@@ -76,10 +85,22 @@ async def test_server_exposes_agent_descriptions(
 
     assert tools["git_agent"].description == agents["git-agent"].description
     assert tools["agent_builder"].description == agents["agent-builder"].description
+    assert (
+        tools["archmage_scribe"].description
+        == agents["archmage-scribe"].description
+    )
     assert tools["bookmark_agent"].description == agents["bookmark-agent"].description
+    assert (
+        tools["decision_architect"].description
+        == agents["decision-architect"].description
+    )
     assert (
         tools["project_ideas_agent"].description
         == agents["project-ideas-agent"].description
+    )
+    assert (
+        tools["writing_assistant"].description
+        == agents["writing-assistant"].description
     )
 
 
@@ -100,16 +121,34 @@ async def test_server_exposes_agent_descriptions(
             AgentBuilderRequest,
         ),
         (
+            "archmage_scribe",
+            {"request": {"instruction": "Develop a fantasy kingdom"}},
+            "archmage-scribe",
+            ArchmageScribeRequest,
+        ),
+        (
             "bookmark_agent",
             {"request": {"url": "https://example.com"}},
             "bookmark-agent",
             BookmarkAgentRequest,
         ),
         (
+            "decision_architect",
+            {"request": {"instruction": "Evaluate a strategic decision"}},
+            "decision-architect",
+            DecisionArchitectRequest,
+        ),
+        (
             "project_ideas_agent",
             {"request": {"instruction": "Create a project idea"}},
             "project-ideas-agent",
             ProjectIdeasAgentRequest,
+        ),
+        (
+            "writing_assistant",
+            {"request": {"instruction": "Write an article"}},
+            "writing-assistant",
+            WritingAssistantRequest,
         ),
     ],
 )

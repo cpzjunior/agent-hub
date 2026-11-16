@@ -1,8 +1,8 @@
 🇺🇸 [English](README.md) | 🇧🇷 [Português](README.pt-BR.md)
 
-# Agent Hub
+# Hub de Agentes
 
-Um espaço de trabalho modular para criar, organizar e orquestrar agentes de IA, com habilidades encapsuladas, ferramentas e recursos compartilhados.
+Um ambiente de trabalho modular para criar, organizar e orquestrar agentes de IA, com habilidades, ferramentas e recursos compartilhados encapsulados.
 
 ## Objetivos
 
@@ -23,7 +23,7 @@ Execute os seguintes comandos a partir da raiz do projeto usando PowerShell:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+..venv\Scripts\Activate.ps1
 python -m pip install -e ".[dev]"
 ```
 
@@ -31,17 +31,20 @@ Se o PowerShell bloquear a execução de scripts:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate.ps1
+..venv\Scripts\Activate.ps1
 ```
 
 ## Agentes
 
-O espaço de trabalho atualmente inclui:
+Atualmente, o ambiente de trabalho inclui:
 
 - **Git Agent** — executa operações Git em repositórios locais.
 - **Agent Builder** — auxilia na criação e no aprimoramento de agentes, habilidades e ferramentas.
+- **Archmage Scribe** — desenvolve conceitos de mundos de fantasia, mantém a consistência com um repositório local de cânone e escreve textos ambientados nesses mundos.
 - **Bookmark Agent** — cria, extrai, descreve e classifica favoritos.
-- **Project Ideas Agent** — gera documentos estruturados com ideias de projetos.
+- **Decision Architect** — oferece suporte à análise de decisões por meio de um processo iterativo que abrange contexto, objetivos, incertezas, consequências e evolução.
+- **Project Ideas Agent** — gera documentos estruturados de ideias de projetos.
+- **Writing Assistant** — explora ideias, escreve, revisa, resume e traduz artigos, preservando a voz editorial do autor.
 
 Cada agente possui suas próprias instruções, fluxos de trabalho e ferramentas, quando aplicável. A interpretação por LLM é fornecida por meio de implementações intercambiáveis da interface principal `Interpreter`, atualmente com suporte a OpenAI e Anthropic.
 
@@ -55,8 +58,11 @@ Cada agente é exposto por meio de uma ferramenta MCP:
 |---|---|
 | Git Agent | `git_agent` |
 | Agent Builder | `agent_builder` |
+| Archmage Scribe | `archmage_scribe` |
 | Bookmark Agent | `bookmark_agent` |
+| Decision Architect | `decision_architect` |
 | Project Ideas Agent | `project_ideas_agent` |
+| Writing Assistant | `writing_assistant` |
 
 O servidor é iniciado com:
 
@@ -64,7 +70,7 @@ O servidor é iniciado com:
 python -m agent_hub.mcp
 ```
 
-O ponto de entrada atual configura interpretadores OpenAI para os quatro agentes. Defina `OPENAI_API_KEY` antes de iniciar o servidor.
+O ponto de entrada atual configura interpretadores OpenAI para todos os agentes. Defina `OPENAI_API_KEY` antes de iniciar o servidor.
 
 Exemplo de configuração de cliente MCP:
 
@@ -82,9 +88,9 @@ Exemplo de configuração de cliente MCP:
 }
 ```
 
-Quando necessário, ajuste `command` para apontar para o executável Python do ambiente virtual do projeto.
+Ajuste `command` para apontar para o executável Python do ambiente virtual do projeto, quando necessário.
 
-## Validação
+**## Validação**
 
 Execute as verificações automatizadas a partir da raiz do projeto:
 
@@ -96,11 +102,11 @@ mypy src tests
 
 Todas as verificações devem passar antes de realizar o commit das alterações.
 
-## Fluxo de desenvolvimento
+**## Fluxo de desenvolvimento**
 
 1. Ative o ambiente virtual.
 2. Implemente as alterações.
-3. Execute os testes, a análise estática de código e a verificação de tipos.
+3. Execute os testes, a verificação de lint e a verificação de tipos.
 4. Faça o commit somente após a aprovação de todas as verificações.
 
 ## Contribuição
@@ -111,7 +117,7 @@ Se você deseja contribuir com este projeto:
 
 1. Faça um fork do repositório.
 2. Crie uma branch para suas alterações.
-3. Faça suas alterações e certifique-se de que o projeto seja compilado com sucesso.
+3. Faça as alterações e certifique-se de que o projeto seja compilado com sucesso.
 4. Execute os testes existentes e adicione novos testes quando aplicável.
 5. Envie um Pull Request descrevendo suas alterações.
 

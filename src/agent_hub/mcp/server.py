@@ -1,12 +1,14 @@
-
 from typing import Any, cast
 
 from mcp.server import MCPServer
 
 from agent_hub.agents.agent_builder.agent import AgentBuilderRequest
+from agent_hub.agents.archmage_scribe.agent import ArchmageScribeRequest
 from agent_hub.agents.bookmark_agent.agent import BookmarkAgentRequest
+from agent_hub.agents.decision_architect.agent import DecisionArchitectRequest
 from agent_hub.agents.git_agent.agent import GitAgentRequest
 from agent_hub.agents.project_ideas_agent.agent import ProjectIdeasAgentRequest
+from agent_hub.agents.writing_assistant.agent import WritingAssistantRequest
 from agent_hub.core.agent_registry import AgentRegistry
 
 
@@ -41,6 +43,19 @@ def create_mcp_server(registry: AgentRegistry) -> MCPServer:
         result = await agent_builder.run(request)
         return cast(dict[str, Any], result.model_dump(mode="json"))
 
+    archmage_scribe = registry.get("archmage-scribe")
+
+    @server.tool(
+        name="archmage_scribe",
+        description=archmage_scribe.description,
+    )
+    async def run_archmage_scribe(
+        request: ArchmageScribeRequest,
+    ) -> dict[str, Any]:
+        """Develop fantasy-world concepts and write in-world texts."""
+        result = await archmage_scribe.run(request)
+        return cast(dict[str, Any], result.model_dump(mode="json"))
+
     bookmark_agent = registry.get("bookmark-agent")
 
     @server.tool(
@@ -54,6 +69,19 @@ def create_mcp_server(registry: AgentRegistry) -> MCPServer:
         result = await bookmark_agent.run(request)
         return cast(dict[str, Any], result.model_dump(mode="json"))
 
+    decision_architect = registry.get("decision-architect")
+
+    @server.tool(
+        name="decision_architect",
+        description=decision_architect.description,
+    )
+    async def run_decision_architect(
+        request: DecisionArchitectRequest,
+    ) -> dict[str, Any]:
+        """Support structured decision analysis."""
+        result = await decision_architect.run(request)
+        return cast(dict[str, Any], result.model_dump(mode="json"))
+
     project_ideas_agent = registry.get("project-ideas-agent")
 
     @server.tool(
@@ -65,6 +93,19 @@ def create_mcp_server(registry: AgentRegistry) -> MCPServer:
     ) -> dict[str, Any]:
         """Generate a project idea document."""
         result = await project_ideas_agent.run(request)
+        return cast(dict[str, Any], result.model_dump(mode="json"))
+
+    writing_assistant = registry.get("writing-assistant")
+
+    @server.tool(
+        name="writing_assistant",
+        description=writing_assistant.description,
+    )
+    async def run_writing_assistant(
+        request: WritingAssistantRequest,
+    ) -> dict[str, Any]:
+        """Write, review, summarize or translate articles."""
+        result = await writing_assistant.run(request)
         return cast(dict[str, Any], result.model_dump(mode="json"))
 
     return server

@@ -21,6 +21,7 @@ SHARED_SKILLS_PATH = Path(__file__).parent / "shared" / "skills"
 AGENT_NAMES = {
     "git-agent",
     "agent-builder",
+    "archmage-scribe",
     "bookmark-agent",
     "project-ideas-agent",
     "decision-architect",
