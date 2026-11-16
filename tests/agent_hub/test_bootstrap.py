@@ -4,6 +4,7 @@ from typing import cast
 import pytest
 
 from agent_hub.agents.agent_builder import AgentBuilder
+from agent_hub.agents.archmage_scribe import ArchmageScribeAgent
 from agent_hub.agents.bookmark_agent import BookmarkAgent
 from agent_hub.agents.decision_architect import DecisionArchitect
 from agent_hub.agents.git_agent import GitAgent
@@ -35,6 +36,7 @@ def interpreters() -> dict[str, Interpreter]:
         "project-ideas-agent": StubInterpreter(),
         "decision-architect": StubInterpreter(),
         "writing-assistant": StubInterpreter(),
+        "archmage-scribe": StubInterpreter(),
     }
 
 
@@ -47,7 +49,7 @@ def test_build_agent_registry_registers_all_agents(
 
     agents = registry.list()
 
-    assert len(agents) == 6
+    assert len(agents) == 7
 
     assert isinstance(registry.get("git-agent"), GitAgent)
     assert isinstance(registry.get("agent-builder"), AgentBuilder)
@@ -63,6 +65,10 @@ def test_build_agent_registry_registers_all_agents(
     assert isinstance(
         registry.get("writing-assistant"),
         WritingAssistant,
+    )
+    assert isinstance(
+        registry.get("archmage-scribe"),
+        ArchmageScribeAgent,
     )
 
 
@@ -86,6 +92,10 @@ def test_build_agent_registry_injects_interpreters(
         WritingAssistant,
         registry.get("writing-assistant"),
     )
+    archmage_scribe = cast(
+        ArchmageScribeAgent,
+        registry.get("archmage-scribe"),
+    )
 
     assert git_agent._interpreter is interpreters["git-agent"]
     assert agent_builder._interpreter is interpreters["agent-builder"]
@@ -102,6 +112,10 @@ def test_build_agent_registry_injects_interpreters(
         writing_assistant.interpreter
         is interpreters["writing-assistant"]
     )
+    assert (
+        archmage_scribe.interpreter
+        is interpreters["archmage-scribe"]
+    )
 
 
 def test_build_agent_registry_configures_repository_paths(
@@ -113,6 +127,7 @@ def test_build_agent_registry_configures_repository_paths(
 
     bookmarks_path = tmp_path / "bookmarks"
     project_ideas_path = tmp_path / "project-ideas"
+    universum_arcanum_path = tmp_path / "universum-arcanum"
 
     monkeypatch.setattr(
         bootstrap,
@@ -123,6 +138,11 @@ def test_build_agent_registry_configures_repository_paths(
         bootstrap,
         "PROJECT_IDEAS_PATH",
         project_ideas_path,
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "UNIVERSUM_ARCANUM_PATH",
+        universum_arcanum_path,
     )
 
     registry = build_agent_registry(interpreters)
@@ -135,10 +155,17 @@ def test_build_agent_registry_configures_repository_paths(
         ProjectIdeasAgent,
         registry.get("project-ideas-agent"),
     )
+    archmage_scribe = cast(
+        ArchmageScribeAgent,
+        registry.get("archmage-scribe"),
+    )
 
     assert bookmark_agent._bookmarks_path == bookmarks_path.resolve()
     assert project_ideas_agent._project_ideas_path == (
         project_ideas_path.resolve()
+    )
+    assert archmage_scribe.content_path == (
+        universum_arcanum_path.resolve()
     )
 
 

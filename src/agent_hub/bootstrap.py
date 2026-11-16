@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from agent_hub.agents.agent_builder import AgentBuilder
+from agent_hub.agents.archmage_scribe import ArchmageScribeAgent
 from agent_hub.agents.bookmark_agent import BookmarkAgent
 from agent_hub.agents.decision_architect import DecisionArchitect
 from agent_hub.agents.git_agent import GitAgent
@@ -14,7 +15,7 @@ REPOSITORIES_PATH = Path.home() / "source" / "repos"
 
 BOOKMARKS_PATH = REPOSITORIES_PATH / "bookmarks"
 PROJECT_IDEAS_PATH = REPOSITORIES_PATH / "project-ideas"
-
+UNIVERSUM_ARCANUM_PATH = REPOSITORIES_PATH / "universum-arcanum"
 SHARED_SKILLS_PATH = Path(__file__).parent / "shared" / "skills"
 
 AGENT_NAMES = {
@@ -50,6 +51,13 @@ def build_agent_registry(
         AgentBuilder(interpreter=interpreters["agent-builder"])
     )
 
+    registry.register(
+        ArchmageScribeAgent(
+            interpreter=interpreters["archmage-scribe"],
+            content_path=UNIVERSUM_ARCANUM_PATH,
+        )
+    )
+    
     registry.register(
         BookmarkAgent(
             interpreter=interpreters["bookmark-agent"],
