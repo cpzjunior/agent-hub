@@ -25,6 +25,7 @@ Use the user's instruction to select exactly one category skill:
 
 - `game-concepts`: a complete game concept.
 - `game-mechanics`: a gameplay mechanic or reusable game system.
+- `legislative`: a legislative proposal, draft law concept or initiative to create, amend or repeal legal provisions.
 - `non-profit`: a social, humanitarian, environmental or public-interest initiative.
 - `services`: a service, platform or business-oriented solution.
 
@@ -46,6 +47,8 @@ The application reads the corresponding existing `README.pt-BR.md` from the loca
 
 Use this document as a structural and depth reference, not as content to copy.
 
+For the `legislative` category, use an existing document under the `legislative/` directory as the reference.
+
 ### Step 4: Generate Portuguese Document
 
 Execute the selected category skill with:
@@ -59,6 +62,10 @@ Expected output:
 
 - `title`.
 - `content_pt_br`: complete Markdown document in Brazilian Portuguese.
+
+Category-specific requirements:
+
+- **legislative:** Assume Brazil as the default jurisdiction unless the user specifies otherwise. Evaluate the legislative competence and constitutional context, relevant legislation, expected positive and negative impacts, implementation feasibility, enforcement challenges and open questions. Distinguish verified legal facts from assumptions and policy recommendations. Use reliable, verifiable references whenever legal or factual claims require support. Never invent laws, bills, court decisions, statistics, sources or URLs. If current legal research is unavailable, explicitly identify the points requiring verification.
 
 If essential information is missing, stop and request it rather than inventing details.
 

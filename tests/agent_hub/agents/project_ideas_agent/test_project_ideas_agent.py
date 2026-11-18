@@ -23,6 +23,7 @@ REFERENCE_PATHS = {
         "exoskeleton-sports-beyond-human-limits/README.pt-BR.md"
     ),
     "game-mechanics": "game-mechanics/dynamic-rival/README.pt-BR.md",
+    "legislative": "legislative/anti-overpricing-act/README.pt-BR.md",
     "non-profit": (
         "non-profit/"
         "integration-and-adaptation-platform-for-immigrants-and-refugees/"
@@ -142,6 +143,7 @@ class TestProjectIdeasAgent:
         assert {
             "game-concepts",
             "game-mechanics",
+            "legislative",
             "non-profit",
             "services",
             "text-translate",
@@ -303,28 +305,30 @@ class TestProjectIdeasAgent:
         assert interpreter.interpret.await_count == 3
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize("category", ["services", "legislative"])
     async def test_variant_is_invalid_for_non_game_category(
         self,
         agent: ProjectIdeasAgent,
         interpreter: AsyncMock,
+        category: str,
     ) -> None:
-        interpreter.interpret.return_value = make_result("services")
+        interpreter.interpret.return_value = make_result(category)
 
         response = await agent.run(
             ProjectIdeasAgentRequest(
-                instruction="Create a service platform.",
+                instruction=f"Create an idea for {category}.",
                 template_variant="beginner",
             )
         )
 
         assert response.status == "failed"
         assert "only valid" in response.message.lower()
-        assert response.category == "services"
+        assert response.category == category
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "category",
-        ["game-mechanics", "non-profit", "services"],
+        ["game-mechanics", "legislative", "non-profit", "services"],
     )
     async def test_non_game_categories(
         self,
@@ -604,26 +608,28 @@ class TestProjectIdeasAgent:
         assert "English" in translation_request.instruction
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize("category", ["services", "legislative"])
     async def test_generation_receives_reference_content(
         self,
         agent: ProjectIdeasAgent,
         interpreter: AsyncMock,
+        category: str,
     ) -> None:
-        configure_success(interpreter)
+        configure_success(interpreter, category=category)
 
         await agent.run(
             ProjectIdeasAgentRequest(
-                instruction="Create a service platform."
+                instruction=f"Create an idea for {category}."
             )
         )
 
         generation_request = interpreter.interpret.await_args_list[1].args[0]
 
         assert [skill.name for skill in generation_request.skills] == [
-            "services"
+            category
         ]
         assert "Reference document (Brazilian Portuguese)" in (
             generation_request.instruction
         )
         assert "Documento de referência" in generation_request.instruction
-        assert REFERENCE_PATHS["services"] in generation_request.instruction
+        assert REFERENCE_PATHS[category] in generation_request.instruction

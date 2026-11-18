@@ -14,6 +14,7 @@ from agent_hub.core import (
 ProjectCategory = Literal[
     "game-concepts",
     "game-mechanics",
+    "legislative",
     "non-profit",
     "services",
 ]
@@ -67,6 +68,9 @@ class ProjectIdeasAgent(Agent):
         "game-mechanics": (
             "game-mechanics/dynamic-rival/README.pt-BR.md"
         ),
+        "legislative": (
+            "legislative/anti-overpricing-act/README.pt-BR.md"
+        ),
         "non-profit": (
             "non-profit/"
             "integration-and-adaptation-platform-for-immigrants-and-refugees/"
@@ -82,6 +86,7 @@ class ProjectIdeasAgent(Agent):
     _SKILL_TO_CATEGORY: dict[str, ProjectCategory] = {
         "game-concepts": "game-concepts",
         "game-mechanics": "game-mechanics",
+        "legislative": "legislative",
         "non-profit": "non-profit",
         "services": "services",
     }
