@@ -38,13 +38,13 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 Atualmente, o ambiente de trabalho inclui:
 
-- **Git Agent** — executa operações Git em repositórios locais.
-- **Agent Builder** — auxilia na criação e no aprimoramento de agentes, habilidades e ferramentas.
-- **Archmage Scribe** — desenvolve conceitos de mundos de fantasia, mantém a consistência com um repositório local de cânone e escreve textos ambientados nesses mundos.
-- **Bookmark Agent** — cria, extrai, descreve e classifica favoritos.
-- **Decision Architect** — oferece suporte à análise de decisões por meio de um processo iterativo que abrange contexto, objetivos, incertezas, consequências e evolução.
-- **Project Ideas Agent** — gera documentos estruturados de ideias de projetos.
-- **Writing Assistant** — explora ideias, escreve, revisa, resume e traduz artigos, preservando a voz editorial do autor.
+- Git Agent — executa operações Git em repositórios locais.
+- Agent Builder — auxilia na criação e no aprimoramento de agentes, habilidades e ferramentas.
+- Archmage Scribe — desenvolve conceitos de mundos de fantasia, mantém a consistência com um repositório local de cânone e escreve textos ambientados nesses mundos.
+- Bookmark Agent — cria, extrai, descreve e classifica favoritos.
+- Decision Architect — oferece suporte à análise de decisões por meio de um processo iterativo que abrange contexto, objetivos, incertezas, consequências e evolução.
+- Project Ideas Agent — gera documentos estruturados de ideias de projetos.
+- Writing Assistant — explora ideias, escreve, revisa, resume e traduz artigos, preservando a voz editorial do autor.
 
 Cada agente possui suas próprias instruções, fluxos de trabalho e ferramentas, quando aplicável. A interpretação por LLM é fornecida por meio de implementações intercambiáveis da interface principal `Interpreter`, atualmente com suporte a OpenAI e Anthropic.
 
@@ -90,7 +90,7 @@ Exemplo de configuração de cliente MCP:
 
 Ajuste `command` para apontar para o executável Python do ambiente virtual do projeto, quando necessário.
 
-**## Validação**
+## Validação
 
 Execute as verificações automatizadas a partir da raiz do projeto:
 
@@ -102,7 +102,7 @@ mypy src tests
 
 Todas as verificações devem passar antes de realizar o commit das alterações.
 
-**## Fluxo de desenvolvimento**
+## Fluxo de desenvolvimento
 
 1. Ative o ambiente virtual.
 2. Implemente as alterações.
