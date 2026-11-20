@@ -1,16 +1,18 @@
+
+
 🇺🇸 [English](README.md) | 🇧🇷 [Português](README.pt-BR.md)
 
 # Agent Hub
 
-A modular workspace for building, organizing and orchestrating AI agents, with encapsulated skills, tools and shared capabilities.
+A modular workspace for creating, organizing, and orchestrating AI agents, with encapsulated shared skills, tools, and resources.
 
-## Goals
+## Objectives
 
 - Organize agents as independent modules.
-- Encapsulate agent-specific skills and tools.
-- Share common capabilities through the core.
-- Support simple and workflow-based agents.
-- Expose agents through an MCP server.
+- Encapsulate each agent's specific skills and tools.
+- Share common resources through the core.
+- Support simple agents and workflow-based agents.
+- Make agents available through an MCP server.
 
 ## Requirements
 
@@ -38,23 +40,23 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 The workspace currently includes:
 
-- Git Agent — performs Git operations in local repositories.
-- Agent Builder — assists with creating and improving agents, skills and tools.
-- Archmage Scribe — develops fantasy-world concepts, maintains consistency with a local canon repository and writes in-world fantasy texts.
-- Bookmark Agent — creates, extracts, describes and classifies bookmarks.
-- Decision Architect — supports decision analysis through an iterative process covering context, objectives, uncertainties, consequences and evolution.
+- Git Agent — performs Git operations on local repositories.
+- Agent Builder — assists in creating and improving agents, skills, and tools.
+- Archmage Scribe — develops fantasy world concepts, maintains consistency with a local canon repository, and writes texts set in those worlds.
+- Bookmark Agent — creates, extracts, describes, and classifies bookmarks.
+- Decision Architect — supports decision analysis through an iterative process covering context, objectives, uncertainties, consequences, and evolution.
 - Project Ideas Agent — generates structured project idea documents.
-- Writing Assistant — explores ideas, writes, reviews, summarizes and translates articles while preserving the author's editorial voice.
+- Writing Assistant — explores ideas, writes, reviews, summarizes, and translates articles while preserving the author's editorial voice.
 
-Each agent has its own instructions, workflows and tools where applicable. LLM interpretation is provided through interchangeable implementations of the core `Interpreter` interface, currently supporting OpenAI and Anthropic.
+Each agent has its own instructions, workflows, and tools, where applicable. LLM interpretation is provided through interchangeable implementations of the main `Interpreter` interface, currently supporting OpenAI and Anthropic.
 
 ## MCP Server
 
-The MCP server exposes the registered agents as tools over the standard input/output (`stdio`) transport.
+The MCP server exposes registered agents as tools through the standard input/output (`stdio`) transport.
 
-Each agent is exposed through one MCP tool:
+Each agent is exposed as an MCP tool:
 
-| Agent | MCP tool |
+| Agent | MCP Tool |
 |---|---|
 | Git Agent | `git_agent` |
 | Agent Builder | `agent_builder` |
@@ -88,7 +90,29 @@ Example MCP client configuration:
 }
 ```
 
-Adjust `command` to point to the Python executable in the project's virtual environment when needed.
+Adjust `command` to point to the Python executable in the project's virtual environment, if necessary.
+
+### Provider selection per agent
+
+It is also possible to use Anthropic or combine different providers across agents. The selection is made individually in the `interpreters` dictionary, defined in the [`src/agent_hub/mcp/__main__.py`](https://github.com/cpzjunior/agent-hub/blob/main/src/agent_hub/mcp/__main__.py) file.
+
+To use Anthropic for an agent, import `AnthropicInterpreter` and replace the corresponding implementation:
+
+```python
+from agent_hub.integrations.langchain.anthropic import AnthropicInterpreter
+from agent_hub.integrations.langchain.openai import OpenAIInterpreter
+
+interpreters = {
+    "git-agent": OpenAIInterpreter(),
+    "agent-builder": AnthropicInterpreter(),
+    "archmage-scribe": OpenAIInterpreter(),
+    # Remaining agents...
+}
+```
+
+Set `ANTHROPIC_API_KEY` in the MCP server environment for agents that use Anthropic. The default model is `claude-sonnet-4-5` and can be changed using the `ANTHROPIC_MODEL` variable.
+
+This allows each agent to use OpenAI or Anthropic independently of the others. If both providers are used, configure the respective API keys in the server environment.
 
 ## Validation
 
@@ -100,13 +124,13 @@ ruff check src tests
 mypy src tests
 ```
 
-All checks should pass before committing changes.
+All checks must pass before committing changes.
 
-## Development workflow
+## Development Workflow
 
 1. Activate the virtual environment.
 2. Implement the changes.
-3. Run tests, lint and type checking.
+3. Run the tests, lint checks, and type checks.
 4. Commit only after all checks pass.
 
 ## Contributing
@@ -117,14 +141,15 @@ If you would like to contribute to this project:
 
 1. Fork the repository.
 2. Create a branch for your changes.
-3. Make your changes and ensure the project builds successfully.
-4. Run the existing tests and add new tests when applicable.
+3. Make your changes and ensure that the project builds successfully.
+4. Run the existing tests and add new tests where applicable.
 5. Submit a Pull Request describing your changes.
 
-For bug reports, feature requests, or questions, please open an issue.
+To report bugs, request features, or ask questions, open an issue.
 
 By contributing, you agree that your contributions will be licensed under the same license as this project.
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
