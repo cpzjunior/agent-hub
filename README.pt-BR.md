@@ -1,3 +1,5 @@
+
+
 🇺🇸 [English](README.md) | 🇧🇷 [Português](README.pt-BR.md)
 
 # Hub de Agentes
@@ -23,7 +25,7 @@ Execute os seguintes comandos a partir da raiz do projeto usando PowerShell:
 
 ```powershell
 python -m venv .venv
-..venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 python -m pip install -e ".[dev]"
 ```
 
@@ -31,7 +33,7 @@ Se o PowerShell bloquear a execução de scripts:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-..venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 ```
 
 ## Agentes
@@ -89,6 +91,28 @@ Exemplo de configuração de cliente MCP:
 ```
 
 Ajuste `command` para apontar para o executável Python do ambiente virtual do projeto, quando necessário.
+
+### Seleção do provedor por agente
+
+Também é possível utilizar Anthropic ou combinar provedores diferentes entre os agentes. A seleção é feita individualmente no dicionário `interpreters`, definido no arquivo [`src/agent_hub/mcp/__main__.py`](https://github.com/cpzjunior/agent-hub/blob/main/src/agent_hub/mcp/__main__.py).
+
+Para utilizar Anthropic em um agente, importe `AnthropicInterpreter` e substitua a implementação correspondente:
+
+```python
+from agent_hub.integrations.langchain.anthropic import AnthropicInterpreter
+from agent_hub.integrations.langchain.openai import OpenAIInterpreter
+
+interpreters = {
+    "git-agent": OpenAIInterpreter(),
+    "agent-builder": AnthropicInterpreter(),
+    "archmage-scribe": OpenAIInterpreter(),
+    # Demais agentes...
+}
+```
+
+Defina `ANTHROPIC_API_KEY` no ambiente do servidor MCP para os agentes que utilizarem Anthropic. O modelo padrão é `claude-sonnet-4-5` e pode ser alterado pela variável `ANTHROPIC_MODEL`.
+
+Dessa forma, cada agente pode utilizar OpenAI ou Anthropic independentemente dos demais. Caso ambos os provedores sejam utilizados, configure as respectivas chaves de API no ambiente do servidor.
 
 ## Validação
 
